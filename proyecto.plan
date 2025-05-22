@@ -1,0 +1,39 @@
+fluents:
+    stock(N) requires range(N).
+    procesado(L) requires lente(L).
+    aprobado(L) requires lente(L).
+
+actions:
+    comprar.
+    procesar(L) requires lente(L).
+    aprobar(L) requires lente(L).
+
+always:
+    % Comprar solo si hay menos de 2 en stock
+    executable comprar if stock(N), menor_que(N,s1).
+    caused stock(s3) after comprar.
+
+    % Procesar solo si hay stock y el lente no ha sido procesado
+    executable procesar(L) if stock(N), mayor_que(N,s0), not procesado(L).
+    caused procesado(L) after procesar(L).
+    caused stock(N1) after procesar(L), stock(N), pred(N1,N).
+
+    % Aprobar solo si ha sido procesado y no ha sido aprobado
+    executable aprobar(L) if procesado(L), not aprobado(L).
+    caused aprobado(L) after aprobar(L).
+
+    nonexecutable aprobar(L) if not procesado(L).
+    nonexecutable procesar(L) if procesado(L).
+
+    inertial stock(N).
+    inertial procesado(L).
+    inertial aprobado(L).
+
+initially:
+    stock(s2).
+    -procesado(l1). -aprobado(l1).
+    -procesado(l2). -aprobado(l2).
+    -procesado(l3). -aprobado(l3).
+
+goal:
+    aprobado(l1), aprobado(l2), aprobado(l3) ? (2)
